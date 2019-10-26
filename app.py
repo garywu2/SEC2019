@@ -12,6 +12,7 @@ import itertools
 import dash_table
 import pandas as pd
 
+#
 # get relative data folder
 PATH = pathlib.Path(__file__).parent
 DATA_PATH = PATH.joinpath("data").resolve()
@@ -77,9 +78,7 @@ app.layout = html.Div(
                                     "Delivery Tracker",
                                     style={"margin-bottom": "0px"},
                                 ),
-                                html.H5(
-                                    "Production Overview", style={"margin-top": "0px"}
-                                ),
+                                
                             ]
                         )
                     ],
@@ -265,7 +264,32 @@ app.layout = html.Div(
 
                     id="Arrival",
 
+<<<<<<< HEAD
+                                        ),
+                                        html.Div(
+
+                                            [
+
+                                                html.P("Number of Expired Parcels"),
+
+                                                html.H6(
+
+                                                    id="ExpiredText",
+
+                                                    className="info_text"
+
+                                                )
+
+                                            ],
+
+                                            id="Expired",
+
+                                            className="pretty_container"
+
+                                        ),
+=======
                     className="pretty_container"
+>>>>>>> 76a6102833a2a2bd98c8156d44642036d1455cb1
 
                 ),
 
