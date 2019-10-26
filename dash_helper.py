@@ -25,13 +25,12 @@ def parse_contents(contents, filename):
     return df_json
 
 
-def read_json(json_list, enabled, date_columns=None):
+def read_json(json_list):
     df_list = []
     try:
-        for json, enabled in zip(json_list, enabled):
-            if enabled == 1:
-                df = pd.read_json(json, orient="split", date_unit="ns")
-                df_list.append(df)
+        for json in json_list:
+            df = pd.read_json(json, orient="split", date_unit="ns")
+            df_list.append(df)
     except Exception as e:
         print("Failed to read dataframe from json")
         print(e)
@@ -44,7 +43,11 @@ def lv_form(list_labels, list_values=None):
     return [{'label': label, 'value': value} for label, value in zip(list_labels,
                                                                      list_values)]
 
-
+def name_ID_form(list_labels, list_values=None):
+    if list_values is None:
+        list_values = list_labels
+    return [{'name': label, 'id': value} for label, value in zip(list_labels,
+                                                                     list_values)]
 
 
 
