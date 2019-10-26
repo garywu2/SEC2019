@@ -85,7 +85,7 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.Img(
-                            src=app.get_asset_url("dash-logo.png"),
+                            src=app.get_asset_url("cow.png"),
                             id="plotly-image",
                             style={
                                 "height": "60px",
