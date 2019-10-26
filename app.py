@@ -88,7 +88,7 @@ app.layout = html.Div(
                             src=app.get_asset_url("cow.png"),
                             id="plotly-image",
                             style={
-                                "height": "60px",
+                                "height": "100px",
                                 "width": "auto",
                                 "margin-bottom": "25px",
                             },
@@ -104,9 +104,7 @@ app.layout = html.Div(
                                     "Delivery Tracker",
                                     style={"margin-bottom": "0px"},
                                 ),
-                                html.H5(
-                                    "Production Overview", style={"margin-top": "0px"}
-                                ),
+                                
                             ]
                         )
                     ],
@@ -292,6 +290,27 @@ app.layout = html.Div(
                                             ],
 
                                             id="Arrival",
+
+                                            className="pretty_container"
+
+                                        ),
+                                        html.Div(
+
+                                            [
+
+                                                html.P("Number of Expired Parcels"),
+
+                                                html.H6(
+
+                                                    id="ExpiredText",
+
+                                                    className="info_text"
+
+                                                )
+
+                                            ],
+
+                                            id="Expired",
 
                                             className="pretty_container"
 
