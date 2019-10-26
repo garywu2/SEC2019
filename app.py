@@ -58,7 +58,7 @@ app.layout = html.Div(
                         html.Div(
                             [
                                 html.H3(
-                                    "New York Oil and Gas",
+                                    "Delivery Tracker",
                                     style={"margin-bottom": "0px"},
                                 ),
                                 html.H5(
@@ -72,10 +72,7 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     [
-                        html.A(
-                            html.Button("Learn More", id="learn-more-button"),
-                            href="https://plot.ly/dash/pricing/",
-                        )
+                        
                     ],
                     className="one-third column",
                     id="button",
