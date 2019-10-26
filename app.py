@@ -12,7 +12,7 @@ import itertools
 import dash_table
 import pandas as pd
 
-#
+
 # get relative data folder
 PATH = pathlib.Path(__file__).parent
 DATA_PATH = PATH.joinpath("data").resolve()
@@ -22,17 +22,40 @@ app = dash.Dash(
 )
 server = app.server
 
-# Read in files.
+#Read in files.
 PAGE_SIZE = 10
-# File Dependancies for filtering
+#File Dependancies for filtering
 operators = [['ge ', '>='],
-             ['le ', '<='],
-             ['lt ', '<'],
-             ['gt ', '>'],
-             ['ne ', '!='],
-             ['eq ', '='],
-             ['contains '],
-             ['datestartswith ']]
+            ['le ', '<='],
+            ['lt ', '<'],
+            ['gt ', '>'],
+            ['ne ', '!='],
+            ['eq ', '='],
+            ['contains '],
+            ['datestartswith ']]
+
+def split_filter_part(filter_part):
+    for operator_type in operators:
+        for operator in operator_type:
+            if operator in filter_part:
+                name_part, value_part = filter_part.split(operator, 1)
+                name = name_part[name_part.find('{') + 1: name_part.rfind('}')]
+
+                value_part = value_part.strip()
+                v0 = value_part[0]
+                if (v0 == value_part[-1] and v0 in ("'", '"', '`')):
+                    value = value_part[1: -1].replace('\\' + v0, v0)
+                else:
+                    try:
+                        value = float(value_part)
+                    except ValueError:
+                        value = value_part
+
+                # word operators need spaces after them in the filter string,
+                # but we don't want these later
+                return name, operator_type[0].strip(), value
+
+    return [None] * 3
 
 layout = dict(
     autosize=True,
@@ -44,6 +67,9 @@ layout = dict(
     legend=dict(font=dict(size=10), orientation="h"),
     title="Satellite Overview",
 )
+
+# Create app layout
+
 
 app.layout = html.Div(
     [
@@ -117,11 +143,11 @@ app.layout = html.Div(
 
                         dash_table.DataTable(
                             id='table-filtering',
-                            page_current=0,
-                            page_size=PAGE_SIZE,
-                            page_action='custom',
-                            filter_action='custom',
-                            filter_query=''
+                            page_current = 0,
+                            page_size = PAGE_SIZE,
+                            page_action = 'custom',
+                            filter_action = 'custom',
+                            filter_query = ''
                         )
 
                     ],
@@ -130,6 +156,7 @@ app.layout = html.Div(
 
                 ),
 
+
             ],
 
             className='row'
@@ -137,134 +164,135 @@ app.layout = html.Div(
         ),
         html.Div(
 
-            [
+                                    [
 
-                html.Div(
+                                        html.Div(
 
-                    [
+                                            [
 
-                        html.P("Total Fuel Consumption"),
+                                                html.P("Total Fuel Consumption"),
 
-                        html.H6(
+                                                html.H6(
 
-                            id="FuelText",
+                                                    id="FuelText",
 
-                            className="info_text"
+                                                    className="info_text"
 
-                        )
+                                                )
 
-                    ],
+                                            ],
 
-                    id="FuelConsumption",
+                                            id="FuelConsumption",
 
-                    className="pretty_container"
+                                            className="pretty_container"
 
-                ),
+                                        ),
 
-                html.Div(
+                                        html.Div(
 
-                    [
+                                            [
 
-                        html.P("Trips Taken"),
+                                                html.P("Trips Taken"),
 
-                        html.H6(
+                                                html.H6(
 
-                            id="TripsText",
+                                                    id="TripsText",
 
-                            className="info_text"
+                                                    className="info_text"
 
-                        )
+                                                )
 
-                    ],
+                                            ],
 
-                    id="TripsTaken",
+                                            id="TripsTaken",
 
-                    className="pretty_container"
+                                            className="pretty_container"
 
-                ),
+                                        ),
 
-                html.Div(
+                                        html.Div(
 
-                    [
+                                            [
 
-                        html.P("Total Distance Travelled"),
+                                                html.P("Total Distance Travelled"),
 
-                        html.H6(
+                                                html.H6(
 
-                            id="DistanceText",
+                                                    id="DistanceText",
 
-                            className="info_text"
+                                                    className="info_text"
 
-                        )
+                                                )
 
-                    ],
+                                            ],
 
-                    id="Distance",
+                                            id="Distance",
 
-                    className="pretty_container"
+                                            className="pretty_container"
 
-                ),
-                html.Div(
+                                        ),
+                                        html.Div(
 
-                    [
+                                            [
 
-                        html.P("Extra Capacity"),
+                                                html.P("Extra Capacity"),
 
-                        html.H6(
+                                                html.H6(
 
-                            id="CapacityText",
+                                                    id="CapacityText",
 
-                            className="info_text"
+                                                    className="info_text"
 
-                        )
+                                                )
 
-                    ],
+                                            ],
 
-                    id="Capacity",
+                                            id="Capacity",
 
-                    className="pretty_container"
+                                            className="pretty_container"
 
-                ),
-                html.Div(
+                                        ),
+                                         html.Div(
 
-                    [
+                                            [
 
-                        html.P("Time Wasted"),
+                                                html.P("Time Wasted"),
 
-                        html.H6(
+                                                html.H6(
 
-                            id="TimeText",
+                                                    id="TimeText",
 
-                            className="info_text"
+                                                    className="info_text"
 
-                        )
+                                                )
 
-                    ],
+                                            ],
 
-                    id="Time",
+                                            id="Time",
 
-                    className="pretty_container"
+                                            className="pretty_container"
 
-                ),
-                html.Div(
+                                        ),
+                                        html.Div(
 
-                    [
+                                            [
 
-                        html.P("Arrival Time of Last Truck"),
+                                                html.P("Arrival Time of Last Truck"),
 
-                        html.H6(
+                                                html.H6(
 
-                            id="ArrivalText",
+                                                    id="ArrivalText",
 
-                            className="info_text"
+                                                    className="info_text"
 
-                        )
+                                                )
 
-                    ],
+                                            ],
 
-                    id="Arrival",
+                                            id="Arrival",
 
-<<<<<<< HEAD
+                                            className="pretty_container"
+
                                         ),
                                         html.Div(
 
@@ -287,17 +315,13 @@ app.layout = html.Div(
                                             className="pretty_container"
 
                                         ),
-=======
-                    className="pretty_container"
->>>>>>> 76a6102833a2a2bd98c8156d44642036d1455cb1
 
-                ),
 
-            ],
+                                    ],
 
-            id="tripleContainer",
+                                    id="tripleContainer",
 
-        ),
+                                ),
 
     ],
     id="mainContainer",
@@ -305,17 +329,15 @@ app.layout = html.Div(
 )
 
 
-# Create app layout
-
-
+#graph call and update
 @app.callback(
     [Output('table-filtering', "data"),
-     Output('table-filtering', "columns")],
+    Output('table-filtering', "columns")],
     [Input('table-filtering', "page_current"),
      Input('table-filtering', "page_size"),
      Input('table-filtering', "filter_query"),
      Input("output-data-upload", "children")])
-def update_table(page_current, page_size, filter, df_json_list):
+def update_table(page_current,page_size, filter, df_json_list):
     print(filter)
     if not df_json_list:
         return [], []
@@ -337,17 +359,14 @@ def update_table(page_current, page_size, filter, df_json_list):
             dff = dff.loc[dff[col_name].str.startswith(filter_value)]
 
     return dff.iloc[
-           page_current * page_size:(page_current + 1) * page_size
-           ].to_dict('records'), dash_helper.name_ID_form(dff.columns)
-
-
-# graph call and update
+        page_current*page_size:(page_current+ 1)*page_size
+    ].to_dict('records'), dash_helper.name_ID_form(dff.columns)
 @app.callback(
-    Output("output-data-upload", "children"),
-    [Input("upload-data", "contents"),
-     Input("upload-data", "filename")],
-    [State("output-data-upload", "children")],
-)
+        Output("output-data-upload", "children"),
+        [Input("upload-data", "contents"),
+         Input("upload-data", "filename")],
+        [State("output-data-upload", "children")],
+    )
 def upload(contents, filenames, list_of_ds):
     """ Handles upload and creation of CSVs"""
     # Dash elements default to None but returning None will break callbacks
@@ -362,6 +381,7 @@ def upload(contents, filenames, list_of_ds):
 
     children = [dash_helper.parse_contents(c, f) for c, f in zip(contents, filenames)]
 
+
     children, filenames = dash_helper.remove_bad_files(children, filenames)
     filenames = dash_helper.remove_file_extension(filenames)
     if not children:
@@ -369,11 +389,6 @@ def upload(contents, filenames, list_of_ds):
     if list_of_ds is not None:
         children = list_of_ds + children
     return children
-
-
-if __name__ == "__main__":
-    app.run_server(debug=True)
-
 
 def split_filter_part(filter_part):
     for operator_type in operators:
@@ -397,3 +412,9 @@ def split_filter_part(filter_part):
                 return name, operator_type[0].strip(), value
 
     return [None] * 3
+
+
+
+# Main
+if __name__ == "__main__":
+    app.run_server(debug=True)
