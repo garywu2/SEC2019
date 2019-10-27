@@ -1,21 +1,16 @@
 # Import required libraries
-import pickle
 import pathlib
 import dash
-import datetime as dt
-import pandas as pd
 from dash.dependencies import Input, Output, State, ClientsideFunction
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_helper
-import itertools
 import dash_table
 import pandas as pd
 from algor import allocate
 from Package import Package
 from Truck import Truck
 from Destination import Destination
-
 
 # get relative data folder
 PATH = pathlib.Path(__file__).parent
@@ -37,7 +32,6 @@ operators = [['ge ', '>='],
              ['eq ', '='],
              ['contains '],
              ['datestartswith ']]
-
 
 layout = dict(
     autosize=True,
@@ -270,42 +264,65 @@ app.layout = html.Div(
 
                     id="Arrival",
 
-                                            className="pretty_container"
+                    className="pretty_container"
 
-                                        ),
-                                        html.Div(
+                ),
+                html.Div(
 
-                                            [
+                    [
 
-                                                html.P("Number of Expired Parcels"),
+                        html.P("Number of Expired Parcels"),
 
-                                                html.H6(
+                        html.H6(
 
-                                                    id="ExpiredText",
+                            id="ExpiredText",
 
-                                                    className="info_text"
+                            className="info_text"
 
-                                                )
+                        )
 
-                                            ],
+                    ],
 
-                                            id="Expired",
+                    id="Expired",
 
-                                            className="pretty_container"
+                    className="pretty_container"
 
-                                        ),
+                ),
 
+            ],
 
-                                    ],
+            id="tripleContainer",
 
-                                    id="tripleContainer",
-
-                                ),
+        ),
 
     ],
     id="mainContainer",
     style={"display": "flex", "flex-direction": "column"},
 )
+
+
+def split_filter_part(filter_part):
+    for operator_type in operators:
+        for operator in operator_type:
+            if operator in filter_part:
+                name_part, value_part = filter_part.split(operator, 1)
+                name = name_part[name_part.find('{') + 1: name_part.rfind('}')]
+
+                value_part = value_part.strip()
+                v0 = value_part[0]
+                if (v0 == value_part[-1] and v0 in ("'", '"', '`')):
+                    value = value_part[1: -1].replace('\\' + v0, v0)
+                else:
+                    try:
+                        value = float(value_part)
+                    except ValueError:
+                        value = value_part
+
+                # word operators need spaces after them in the filter string,
+                # but we don't want these later
+                return name, operator_type[0].strip(), value
+
+    return [None] * 3
 
 
 @app.callback(
@@ -343,7 +360,7 @@ def update_table(page_current, page_size, filter, df_json_list):
                   row['cold']))
 
     allocate(parcels, trucks)
-    ids, ats, dels, refrigs, weights, expiry, destination_names = [], [],[],[],[],[],[],
+    ids, ats, dels, refrigs, weights, expiry, destination_names = [], [], [], [], [], [], [],
     parcels = [p for p in parcels if p.destination != 0]
     for p in parcels:
         ids.append(p.theid)
@@ -354,32 +371,28 @@ def update_table(page_current, page_size, filter, df_json_list):
         expiry.append(p.expiry)
         destination_names.append(p.destination.name)
     dff = pd.DataFrame(list(zip(ids, ats, expiry, weights, dels, refrigs, destination_names)),
-    columns = ['ID number', 'Arrival time', 'Expiry (hours from now)',
-                    'Weight (kg) ', 'Delicate (Y/N)', 'Refrigerated (Y/N)', "Destination Name"])
+                       columns=['ID number', 'Arrival time', 'Expiry (hours from now)',
+                                'Weight (kg) ', 'Delicate (Y/N)', 'Refrigerated (Y/N)', "Destination Name"])
     print(dff)
 
-    # for filter_part in filtering_expressions:
-    #     col_name, operator, filter_value = split_filter_part(filter_part)
-    #
-    #     if operator in ('eq', 'ne', 'lt', 'le', 'gt', 'ge'):
-    #         # these operators match pandas series operator method names
-    #         dff = dff.loc[getattr(dff[col_name], operator)(filter_value)]
-    #     elif operator == 'contains':
-    #         dff = dff.loc[dff[col_name].str.contains(filter_value)]
-    #     elif operator == 'datestartswith':
-    #         # this is a simplification of the front-end filtering logic,
-    #         # only works with complete fields in standard format
-    #         dff = dff.loc[dff[col_name].str.startswith(filter_value)]
+    for filter_part in filtering_expressions:
+        col_name, operator, filter_value = split_filter_part(filter_part)
 
+        if operator in ('eq', 'ne', 'lt', 'le', 'gt', 'ge'):
+            # these operators match pandas series operator method names
+            dff = dff.loc[getattr(dff[col_name], operator)(filter_value)]
+        elif operator == 'contains':
+            dff = dff.loc[dff[col_name].str.contains(filter_value)]
+        elif operator == 'datestartswith':
+            # this is a simplification of the front-end filtering logic,
+            # only works with complete fields in standard format
+            dff = dff.loc[dff[col_name].str.startswith(filter_value)]
 
-
-    return dff.to_dict('records'), dash_helper.name_ID_form(dff.columns)
-
-
-# graph call and update
     return dff.iloc[
-        page_current*page_size:(page_current+ 1)*page_size
-    ].to_dict('records'), dash_helper.name_ID_form(dff.columns)
+           page_current * page_size:(page_current + 1) * page_size
+           ].to_dict('records'), dash_helper.name_ID_form(dff.columns)
+
+
 @app.callback(
     Output("output-data-upload", "children"),
     [Input("upload-data", "contents"),
@@ -397,9 +410,7 @@ def upload(contents, filenames, list_of_ds):
     # Check that there is no duplicates in the filenames of the upload
     if dash_helper.duplicate_filename_check(filenames):
         return list_of_ds
-
     children = [dash_helper.parse_contents(c, f) for c, f in zip(contents, filenames)]
-
     children, filenames = dash_helper.remove_bad_files(children, filenames)
     filenames = dash_helper.remove_file_extension(filenames)
     if not children:
@@ -411,27 +422,3 @@ def upload(contents, filenames, list_of_ds):
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
-
-def split_filter_part(filter_part):
-    for operator_type in operators:
-        for operator in operator_type:
-            if operator in filter_part:
-                name_part, value_part = filter_part.split(operator, 1)
-                name = name_part[name_part.find('{') + 1: name_part.rfind('}')]
-
-                value_part = value_part.strip()
-                v0 = value_part[0]
-                if (v0 == value_part[-1] and v0 in ("'", '"', '`')):
-                    value = value_part[1: -1].replace('\\' + v0, v0)
-                else:
-                    try:
-                        value = float(value_part)
-                    except ValueError:
-                        value = value_part
-
-                # word operators need spaces after them in the filter string,
-                # but we don't want these later
-                return name, operator_type[0].strip(), value
-
-    return [None] * 3
