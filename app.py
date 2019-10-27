@@ -16,6 +16,7 @@ from Package import Package
 from Truck import Truck
 from Destination import Destination
 
+
 # get relative data folder
 PATH = pathlib.Path(__file__).parent
 DATA_PATH = PATH.joinpath("data").resolve()
@@ -37,6 +38,7 @@ operators = [['ge ', '>='],
              ['contains '],
              ['datestartswith ']]
 
+
 layout = dict(
     autosize=True,
     automargin=True,
@@ -48,6 +50,7 @@ layout = dict(
     title="Satellite Overview",
 )
 
+# Create app layout
 app.layout = html.Div(
     [
         dcc.Store(id="aggregate_data"),
@@ -81,9 +84,7 @@ app.layout = html.Div(
                                     "Delivery Tracker",
                                     style={"margin-bottom": "0px"},
                                 ),
-                                html.H5(
-                                    "Production Overview", style={"margin-top": "0px"}
-                                ),
+
                             ]
                         )
                     ],
@@ -269,23 +270,42 @@ app.layout = html.Div(
 
                     id="Arrival",
 
-                    className="pretty_container"
+                                            className="pretty_container"
 
-                ),
+                                        ),
+                                        html.Div(
 
-            ],
+                                            [
 
-            id="tripleContainer",
+                                                html.P("Number of Expired Parcels"),
 
-        ),
+                                                html.H6(
+
+                                                    id="ExpiredText",
+
+                                                    className="info_text"
+
+                                                )
+
+                                            ],
+
+                                            id="Expired",
+
+                                            className="pretty_container"
+
+                                        ),
+
+
+                                    ],
+
+                                    id="tripleContainer",
+
+                                ),
 
     ],
     id="mainContainer",
     style={"display": "flex", "flex-direction": "column"},
 )
-
-
-# Create app layout
 
 
 @app.callback(
@@ -357,6 +377,9 @@ def update_table(page_current, page_size, filter, df_json_list):
 
 
 # graph call and update
+    return dff.iloc[
+        page_current*page_size:(page_current+ 1)*page_size
+    ].to_dict('records'), dash_helper.name_ID_form(dff.columns)
 @app.callback(
     Output("output-data-upload", "children"),
     [Input("upload-data", "contents"),
