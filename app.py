@@ -11,6 +11,10 @@ import dash_helper
 import itertools
 import dash_table
 import pandas as pd
+from algor import allocate
+from Package import Package
+from Truck import Truck
+from Destination import Destination
 
 # get relative data folder
 PATH = pathlib.Path(__file__).parent
@@ -295,26 +299,61 @@ def update_table(page_current, page_size, filter, df_json_list):
     print(filter)
     if not df_json_list:
         return [], []
-    print(df_json_list)
     df_list = dash_helper.read_json(df_json_list)
     filtering_expressions = filter.split(' && ')
-    dff = df_list[0]
-    for filter_part in filtering_expressions:
-        col_name, operator, filter_value = split_filter_part(filter_part)
+    destination_df = df_list[0]
+    parcel_df = df_list[1]
+    truck_df = df_list[2]
+    trucks, parcels, destinations = [], [], []
+    for index, row in destination_df.iterrows():
+        destinations.append(
+            Destination(row['id'], row['name'], row['distance']))
 
-        if operator in ('eq', 'ne', 'lt', 'le', 'gt', 'ge'):
-            # these operators match pandas series operator method names
-            dff = dff.loc[getattr(dff[col_name], operator)(filter_value)]
-        elif operator == 'contains':
-            dff = dff.loc[dff[col_name].str.contains(filter_value)]
-        elif operator == 'datestartswith':
-            # this is a simplification of the front-end filtering logic,
-            # only works with complete fields in standard format
-            dff = dff.loc[dff[col_name].str.startswith(filter_value)]
+    for index, row in parcel_df.iterrows():
+        dest = 0
+        for d in destinations:
+            if row['destination'] == d.theid:
+                dest = d
+        parcels.append(
+            Package(row['id'], row['arrival_time'], dest, row['expiry'], row['weight'], row['delicate'], row['cold']))
 
-    return dff.iloc[
-           page_current * page_size:(page_current + 1) * page_size
-           ].to_dict('records'), dash_helper.name_ID_form(dff.columns)
+    for index, row in truck_df.iterrows():
+        trucks.append(
+            Truck(row['id'], row['distance'], row['speed'], row['capacity'], row['fuel_efficiency'], row['delicate'],
+                  row['cold']))
+
+    allocate(parcels, trucks)
+    ids, ats, dels, refrigs, weights, expiry, destination_names = [], [],[],[],[],[],[],
+    parcels = [p for p in parcels if p.destination != 0]
+    for p in parcels:
+        ids.append(p.theid)
+        ats.append(p.arrivetime)
+        dels.append(p.delicate)
+        refrigs.append(p.refrig)
+        weights.append(p.weight)
+        expiry.append(p.expiry)
+        destination_names.append(p.destination.name)
+    dff = pd.DataFrame(list(zip(ids, ats, expiry, weights, dels, refrigs, destination_names)),
+    columns = ['ID number', 'Arrival time', 'Expiry (hours from now)',
+                    'Weight (kg) ', 'Delicate (Y/N)', 'Refrigerated (Y/N)', "Destination Name"])
+    print(dff)
+
+    # for filter_part in filtering_expressions:
+    #     col_name, operator, filter_value = split_filter_part(filter_part)
+    #
+    #     if operator in ('eq', 'ne', 'lt', 'le', 'gt', 'ge'):
+    #         # these operators match pandas series operator method names
+    #         dff = dff.loc[getattr(dff[col_name], operator)(filter_value)]
+    #     elif operator == 'contains':
+    #         dff = dff.loc[dff[col_name].str.contains(filter_value)]
+    #     elif operator == 'datestartswith':
+    #         # this is a simplification of the front-end filtering logic,
+    #         # only works with complete fields in standard format
+    #         dff = dff.loc[dff[col_name].str.startswith(filter_value)]
+
+
+
+    return dff.to_dict('records'), dash_helper.name_ID_form(dff.columns)
 
 
 # graph call and update

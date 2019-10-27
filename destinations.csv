@@ -1,20 +1,13 @@
-﻿ID number,Name,Distance (km),Fuel economy (L/km)
-1,a,10,82
-2,b,61,14
-3,c,49,58
-4,d,86,63
-5,e,78,99
-6,b,86,86
-7,a,50,21
-8,a,76,51
-9,b,90,80
-10,c,35,34
-11,d,31,92
-12,e,92,63
-13,a,23,28
-14,b,83,16
-15,a,100,20
-16,b,73,94
-17,c,94,90
-18,d,50,31
-19,e,63,43
+id,name,distance
+1,Blue Elk,147.5
+2,Groundrie,36.7
+3,Lethtruss,211.9
+4,Low Lake,65.3
+5,Edmontry,299.5
+6,Grabber Brook,216.2
+7,Ladutchess,266.5
+8,White Onyx,66.8
+9,Mackfort,739.7
+10,Hot Pond,599.2
+11,Boxles,104.6
+12,Jaspham,413.3
